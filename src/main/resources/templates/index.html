@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Plant Care Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container py-5">
+  <h1 class="mb-4">🌿 Plant Care Dashboard</h1>
+
+  <div class="card mb-4">
+    <div class="card-header bg-success text-white">Latest Sensor Data</div>
+    <div class="card-body">
+      <p><strong>Moisture Level:</strong> <span th:text="${sensorData.moistureLevel}">-</span></p>
+      <p><strong>Timestamp:</strong> <span th:text="${sensorData.timestamp}">-</span></p>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header bg-info text-white">Recent Watering Events</div>
+    <div class="card-body">
+      <ul class="list-group" th:if="${wateringEvents != null}">
+        <li class="list-group-item" th:each="event : ${wateringEvents}">
+          <span th:text="${event.timestamp}"></span>
+          -
+          <span th:text="${event.automatic ? 'Automatic' : 'Manual'}"></span>
+        </li>
+      </ul>
+      <p th:if="${wateringEvents == null or #lists.isEmpty(wateringEvents)}" class="text-muted">No watering events found.</p>
+    </div>
+  </div>
+
+  <form th:action="@{/api/watering-events}" method="post">
+    <input type="hidden" name="automatic" value="false"/>
+    <button class="btn btn-primary">💧 Water Now (Manual)</button>
+  </form>
+</div>
+</body>
+</html>
