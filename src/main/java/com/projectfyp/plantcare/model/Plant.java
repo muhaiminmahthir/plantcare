@@ -1,37 +1,20 @@
 package com.projectfyp.plantcare.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 
-@Entity
+@Entity // This annotation marks the class as a JPA entity
 public class Plant {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name; // e.g., "Aloe Vera"
+    private String name;
+    private Integer moistureThreshold;
+    private Boolean isWateringEnabled;
+    private Integer moistureLevel;
 
-    private int moistureLevel; // current sensor reading
-
-    private boolean watered; // was it watered recently?
-
-    private String healthStatus; // e.g., "healthy", "dry", "diseased"
-
-    private LocalDateTime lastWateredTime;
-
-    public Plant() {}
-
-    public Plant(String name, int moistureLevel, boolean watered, String healthStatus, LocalDateTime lastWateredTime) {
-        this.name = name;
-        this.moistureLevel = moistureLevel;
-        this.watered = watered;
-        this.healthStatus = healthStatus;
-        this.lastWateredTime = lastWateredTime;
-    }
-
-    // Getters and Setters
-
+    // Getters and setters
     public Long getId() {
         return id;
     }
@@ -48,35 +31,27 @@ public class Plant {
         this.name = name;
     }
 
-    public int getMoistureLevel() {
+    public Integer getMoistureThreshold() {
+        return moistureThreshold;
+    }
+
+    public void setMoistureThreshold(Integer moistureThreshold) {
+        this.moistureThreshold = moistureThreshold;
+    }
+
+    public Boolean getIsWateringEnabled() {
+        return isWateringEnabled;
+    }
+
+    public void setIsWateringEnabled(Boolean isWateringEnabled) {
+        this.isWateringEnabled = isWateringEnabled;
+    }
+
+    public Integer getMoistureLevel() {
         return moistureLevel;
     }
 
-    public void setMoistureLevel(int moistureLevel) {
+    public void setMoistureLevel(Integer moistureLevel) {
         this.moistureLevel = moistureLevel;
-    }
-
-    public boolean isWatered() {
-        return watered;
-    }
-
-    public void setWatered(boolean watered) {
-        this.watered = watered;
-    }
-
-    public String getHealthStatus() {
-        return healthStatus;
-    }
-
-    public void setHealthStatus(String healthStatus) {
-        this.healthStatus = healthStatus;
-    }
-
-    public LocalDateTime getLastWateredTime() {
-        return lastWateredTime;
-    }
-
-    public void setLastWateredTime(LocalDateTime lastWateredTime) {
-        this.lastWateredTime = lastWateredTime;
     }
 }

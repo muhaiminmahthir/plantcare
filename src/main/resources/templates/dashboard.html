@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Plant Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS for better styling -->
+    <style>
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background-color: #007bff;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .card-body {
+            background-color: #f8f9fa;
+        }
+        .card-footer {
+            background-color: #e9ecef;
+            border-top: 1px solid #ddd;
+        }
+        .container {
+            max-width: 1200px;
+        }
+        .form-group label {
+            font-weight: bold;
+        }
+        .btn {
+            font-size: 1rem;
+        }
+        .header-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+        }
+        .btn-primary, .btn-warning, .btn-info {
+            width: 100%;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="header-title text-center mb-5">Plant Care Dashboard</h1>
+
+        <!-- Check if the plants list is empty -->
+        <div th:if="${#lists.isEmpty(plants)}" class="alert alert-info">
+            <strong>No plants available.</strong>
+        </div>
+
+        <!-- Show plants only if the list is not empty -->
+        <div th:unless="${#lists.isEmpty(plants)}">
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                <div class="col" th:each="plant : ${plants}">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 th:text="${plant.name}"></h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text"><strong>Moisture Level:</strong> <span th:text="${plant.moistureLevel} + '%'"></span></p>
+                            <p class="card-text"><strong>Threshold:</strong> <span th:text="${plant.moistureThreshold} + '%'"></span></p>
+                            <p class="card-text">
+                                <strong>Watering Status:</strong> 
+                                <span th:text="${plant.isWateringEnabled ? 'Enabled' : 'Disabled'}"></span>
+                            </p>
+                        </div>
+                        <div class="card-footer text-muted">
+                            <form th:action="@{/water/{id}(id=${plant.id})}" method="post">
+                                <button type="submit" class="btn btn-primary mb-3">Water Plant</button>
+                            </form>
+                            <!-- Watering Schedule Form -->
+                            <form th:action="@{/schedule/{id}(id=${plant.id})}" method="post" class="mb-3">
+                                <div class="form-group">
+                                    <label for="time">Set Watering Schedule</label>
+                                    <input type="time" id="time" name="time" class="form-control">
+                                </div>
+                                <button type="submit" class="btn btn-warning mt-2">Set Schedule</button>
+                            </form>
+
+                            <!-- Moisture Threshold Adjustment -->
+                            <form th:action="@{/threshold/{id}(id=${plant.id})}" method="post">
+                                <div class="form-group">
+                                    <label for="threshold">Adjust Moisture Threshold (%)</label>
+                                    <input type="number" id="threshold" name="threshold" class="form-control"
+                                           th:value="${plant.moistureThreshold}" min="0" max="100">
+                                </div>
+                                <button type="submit" class="btn btn-info mt-2">Set Threshold</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="/static/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

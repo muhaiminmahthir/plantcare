@@ -1,42 +1,45 @@
 package com.projectfyp.plantcare.controller;
 
-import com.projectfyp.plantcare.model.SensorData;
-import com.projectfyp.plantcare.model.WateringEvent;
-import com.projectfyp.plantcare.service.SensorDataService;
-import com.projectfyp.plantcare.service.WateringEventService;
+import com.projectfyp.plantcare.model.Plant;
+import com.projectfyp.plantcare.service.PlantService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-
-import java.time.LocalDateTime;
+import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Controller
 public class DashboardController {
 
-    private final SensorDataService sensorDataService;
-    private final WateringEventService wateringEventService;
+    @Autowired
+    private PlantService plantService;
 
-    public DashboardController(SensorDataService sensorDataService, WateringEventService wateringEventService) {
-        this.sensorDataService = sensorDataService;
-        this.wateringEventService = wateringEventService;
+    @GetMapping("/dashboard")
+    public String showDashboard(Model model) {
+        List<Plant> plants = plantService.getAllPlants();
+        if (plants == null || plants.isEmpty()) {
+            // Handle the case where no plants are available
+            
+        }
+        model.addAttribute("plants", plants);
+        return "dashboard"; // Render the dashboard.html view
     }
 
-    @GetMapping("/")
-    public String dashboard(Model model) {
-        SensorData sensorData = sensorDataService.getLatestSensorData();
-        List<WateringEvent> events = wateringEventService.getAllEvents();
-
-        model.addAttribute("sensorData", sensorData);
-        model.addAttribute("wateringEvents", events);
-
-        return "index"; // Loads index.html
+    @PostMapping("/water/{plantId}")
+    public String triggerManualWatering(@PathVariable Long plantId) {
+        plantService.triggerManualWatering(plantId);
+        return "redirect:/dashboard"; // Redirect to the dashboard page after watering
     }
-    @PostMapping("/api/watering-events")
-    public String logManualWatering() {
-        WateringEvent event = new WateringEvent(LocalDateTime.now(), false, null); // null for plant if not used
-        wateringEventService.saveEvent(event);
-        return "redirect:/";
+
+    @PostMapping("/schedule/{plantId}")
+    public String setWateringSchedule(@PathVariable Long plantId, @RequestParam("time") String time) {
+        // Logic to set watering schedule
+        return "redirect:/dashboard";
+    }
+
+    @PostMapping("/threshold/{plantId}")
+    public String adjustMoistureThreshold(@PathVariable Long plantId, @RequestParam("threshold") int threshold) {
+        plantService.adjustMoistureThreshold(plantId, threshold);
+        return "redirect:/dashboard"; // Redirect to the dashboard after adjusting threshold
     }
 }
