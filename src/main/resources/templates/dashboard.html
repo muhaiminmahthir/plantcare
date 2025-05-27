@@ -2,104 +2,1023 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Plant Dashboard</title>
+    <title>PlantCare AI - Smart Plant Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Bootstrap CSS -->
-    <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Custom CSS for better styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        .card {
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            --dark-bg: #0f0f23;
+            --card-bg: #1a1a2e;
+            --card-hover: #16213e;
+            --text-primary: #ffffff;
+            --text-secondary: #b8b9cf;
+            --border-color: #2d2d4a;
+            --accent-color: #667eea;
+            --ai-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
         }
-        .card-header {
-            background-color: #007bff;
-            color: white;
-            font-size: 1.2rem;
-            font-weight: bold;
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .card-body {
-            background-color: #f8f9fa;
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
         }
-        .card-footer {
-            background-color: #e9ecef;
-            border-top: 1px solid #ddd;
-        }
-        .container {
-            max-width: 1200px;
-        }
-        .form-group label {
-            font-weight: bold;
-        }
-        .btn {
-            font-size: 1rem;
-        }
-        .header-title {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #333;
-        }
-        .btn-primary, .btn-warning, .btn-info {
+
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            padding: 10px;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 80%, rgba(240, 147, 251, 0.1) 0%, transparent 50%);
+            z-index: -1;
+            animation: backgroundShift 20s ease-in-out infinite;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Header Styling */
+        .header {
+            background: var(--primary-gradient);
+            padding: 2rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            animation: float 30s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(-25%, -25%) rotate(0deg); }
+            50% { transform: translate(-25%, -25%) rotate(180deg); }
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            text-align: center;
+            margin: 0;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+        }
+
+        .header .subtitle {
+            text-align: center;
+            margin-top: 0.5rem;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Modern Cards */
+        .modern-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .modern-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .modern-card:hover {
+            background: var(--card-hover);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.2);
+            border-color: var(--accent-color);
+        }
+
+        .modern-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .plant-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .plant-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--success-gradient);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .plant-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-enabled {
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            color: white;
+        }
+
+        .status-disabled {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+        }
+
+        /* Metrics Display */
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .metric {
+            text-align: center;
+            flex: 1;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            display: block;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Progress Bars */
+        .progress-container {
+            margin: 1rem 0;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .modern-progress {
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--success-gradient);
+            border-radius: 10px;
+            transition: width 0.8s ease;
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Modern Buttons */
+        .modern-btn {
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            color: white;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .modern-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            transform: translate(-50%, -50%);
+        }
+
+        .modern-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .modern-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-warning-modern {
+            background: var(--warning-gradient);
+        }
+
+        .btn-info-modern {
+            background: var(--success-gradient);
+        }
+
+        /* AI Disease Detection Section */
+        .ai-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            padding: 2rem;
+            margin-top: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: var(--ai-gradient);
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .ai-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--ai-gradient);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .ai-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+            background: var(--ai-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent-color);
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--accent-color);
+            background: rgba(102, 126, 234, 0.1);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+            opacity: 0.7;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        /* Results Display */
+        .results-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-top: 2rem;
+            display: none;
+            animation: slideInUp 0.5s ease;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .confidence-meter {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .confidence-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            position: relative;
+        }
+
+        .prediction-bars {
+            margin-top: 1.5rem;
+        }
+
+        .prediction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 12px;
+        }
+
+        .prediction-bar {
+            flex: 1;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 5px;
+            margin: 0 1rem;
+            overflow: hidden;
+        }
+
+        .prediction-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 1s ease;
+        }
+
+        /* Loading Animation */
+        .loading-container {
+            text-align: center;
+            padding: 3rem 2rem;
+            display: none;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 2rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .loading-subtext {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+
+        /* Form Styling */
+        .modern-input {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .modern-input:focus {
+            background: var(--card-hover);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            outline: none;
+        }
+
+        .form-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .ai-section {
+                padding: 1.5rem;
+            }
+            
+            .upload-area {
+                padding: 2rem 1rem;
+            }
+            
+            .metric-row {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        /* Alert Styling */
+        .modern-alert {
+            border: none;
+            border-radius: 15px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+
+        .alert-success-modern {
+            background: linear-gradient(135deg, rgba(74, 222, 128, 0.1) 0%, rgba(34, 197, 94, 0.1) 100%);
+            border-left: 4px solid #22c55e;
+            color: #22c55e;
+        }
+
+        .alert-info-modern {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%);
+            border-left: 4px solid #3b82f6;
+            color: #3b82f6;
         }
     </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h1 class="header-title text-center mb-5">Plant Care Dashboard</h1>
+    <!-- Header Section -->
+    <div class="header">
+        <div class="container">
+            <h1><i class="fas fa-seedling"></i> PlantCare AI</h1>
+            <p class="subtitle">Smart Plant Management & Disease Detection</p>
+        </div>
+    </div>
 
-        <!-- Check if the plants list is empty -->
-        <div th:if="${#lists.isEmpty(plants)}" class="alert alert-info">
-            <strong>No plants available.</strong>
+    <div class="container mt-5">
+        <!-- Success Message -->
+        <div th:if="${message}" class="modern-alert alert-success-modern">
+            <i class="fas fa-check-circle me-2"></i>
+            <span th:text="${message}"></span>
         </div>
 
-        <!-- Show plants only if the list is not empty -->
-        <div th:unless="${#lists.isEmpty(plants)}">
-            <div class="row row-cols-1 row-cols-md-3 g-4">
-                <div class="col" th:each="plant : ${plants}">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 th:text="${plant.name}"></h5>
-                        </div>
-                        <div class="card-body">
-                            <p class="card-text"><strong>Moisture Level:</strong> <span th:text="${plant.moistureLevel} + '%'"></span></p>
-                            <p class="card-text"><strong>Threshold:</strong> <span th:text="${plant.moistureThreshold} + '%'"></span></p>
-                            <p class="card-text">
-                                <strong>Watering Status:</strong> 
-                                <span th:text="${plant.isWateringEnabled ? 'Enabled' : 'Disabled'}"></span>
-                            </p>
-                        </div>
-                        <div class="card-footer text-muted">
-                            <form th:action="@{/water/{id}(id=${plant.id})}" method="post">
-                                <button type="submit" class="btn btn-primary mb-3">Water Plant</button>
-                            </form>
-                            <!-- Watering Schedule Form -->
-                            <form th:action="@{/schedule/{id}(id=${plant.id})}" method="post" class="mb-3">
-                                <div class="form-group">
-                                    <label for="time">Set Watering Schedule</label>
-                                    <input type="time" id="time" name="time" class="form-control">
-                                </div>
-                                <button type="submit" class="btn btn-warning mt-2">Set Schedule</button>
-                            </form>
+        <!-- No Plants Message -->
+        <div th:if="${#lists.isEmpty(plants)}" class="modern-alert alert-info-modern">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>No plants available.</strong> Start by adding your first plant to begin monitoring!
+        </div>
 
-                            <!-- Moisture Threshold Adjustment -->
-                            <form th:action="@{/threshold/{id}(id=${plant.id})}" method="post">
-                                <div class="form-group">
-                                    <label for="threshold">Adjust Moisture Threshold (%)</label>
-                                    <input type="number" id="threshold" name="threshold" class="form-control"
-                                           th:value="${plant.moistureThreshold}" min="0" max="100">
+        <!-- Plants Grid -->
+        <div th:unless="${#lists.isEmpty(plants)}">
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6" th:each="plant : ${plants}">
+                    <div class="modern-card">
+                        <div class="plant-card-header">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="plant-icon">
+                                    <i class="fas fa-leaf"></i>
                                 </div>
-                                <button type="submit" class="btn btn-info mt-2">Set Threshold</button>
-                            </form>
+                                <h5 class="plant-name" th:text="${plant.name}"></h5>
+                            </div>
+                            <span class="status-badge" 
+                                  th:classappend="${plant.isWateringEnabled ? 'status-enabled' : 'status-disabled'}"
+                                  th:text="${plant.isWateringEnabled ? 'Active' : 'Inactive'}"></span>
+                        </div>
+
+                        <div class="metric-row">
+                            <div class="metric">
+                                <span class="metric-value" th:text="${plant.moistureLevel} + '%'"></span>
+                                <span class="metric-label">Moisture</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-value" th:text="${plant.moistureThreshold} + '%'"></span>
+                                <span class="metric-label">Threshold</span>
+                            </div>
+                        </div>
+
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span>Soil Moisture</span>
+                                <span th:text="${plant.moistureLevel} + '%'"></span>
+                            </div>
+                            <div class="modern-progress">
+                                <div class="progress-bar" th:style="'width: ' + ${plant.moistureLevel} + '%;'"></div>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mt-3">
+                            <div class="col-12">
+                                <form th:action="@{/water/{id}(id=${plant.id})}" method="post">
+                                    <button type="submit" class="modern-btn w-100">
+                                        <i class="fas fa-tint me-2"></i>Water Plant
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mt-2">
+                            <div class="col-6">
+                                <form th:action="@{/schedule/{id}(id=${plant.id})}" method="post">
+                                    <div class="mb-2">
+                                        <label class="form-label">Schedule</label>
+                                        <input type="time" name="time" class="form-control modern-input">
+                                    </div>
+                                    <button type="submit" class="modern-btn btn-warning-modern w-100">
+                                        <i class="fas fa-clock me-1"></i>Set
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="col-6">
+                                <form th:action="@{/threshold/{id}(id=${plant.id})}" method="post">
+                                    <div class="mb-2">
+                                        <label class="form-label">Threshold</label>
+                                        <input type="number" name="threshold" class="form-control modern-input"
+                                               th:value="${plant.moistureThreshold}" min="0" max="100">
+                                    </div>
+                                    <button type="submit" class="modern-btn btn-info-modern w-100">
+                                        <i class="fas fa-cog me-1"></i>Set
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- AI Disease Detection Section -->
+        <div class="ai-section">
+            <div class="ai-header">
+                <div class="ai-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <div>
+                    <h2 class="ai-title">AI Disease Detection</h2>
+                    <p class="text-secondary mb-0">Upload a plant image for instant health analysis</p>
+                </div>
+            </div>
+
+            <form id="diseaseAnalysisForm" enctype="multipart/form-data">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="upload-text">
+                        <strong>Drop your plant image here</strong> or click to browse
+                    </div>
+                    <p class="text-secondary mb-3">Supports JPG, PNG, BMP up to 10MB</p>
+                    <input type="file" id="plantImage" name="image" accept="image/*" required class="file-input">
+                    <button type="button" class="modern-btn" onclick="document.getElementById('plantImage').click()">
+                        <i class="fas fa-camera me-2"></i>Choose File
+                    </button>
+                </div>
+                
+                <div class="text-center mt-3">
+                    <button type="submit" class="modern-btn px-4">
+                        <i class="fas fa-microscope me-2"></i>Analyze Plant Health
+                    </button>
+                </div>
+            </form>
+
+            <!-- Loading Animation -->
+            <div id="loadingSpinner" class="loading-container">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Analyzing your plant image...</div>
+                <div class="loading-subtext">This may take 10-30 seconds</div>
+            </div>
+
+            <!-- Results Container -->
+            <div id="analysisResult" class="results-container">
+                <h4><i class="fas fa-chart-line me-2"></i>Analysis Results</h4>
+                <div id="plantInfo"></div>
+                <div id="diseaseInfo"></div>
+                <div id="recommendations"></div>
+            </div>
+        </div>
     </div>
 
+    <script>
+        // Enhanced JavaScript with all the functions from the previous version
+        function displayAnalysisResult(result) {
+            console.log('Displaying enhanced result:', result);
+            
+            // Plant Type with confidence level
+            document.getElementById('plantInfo').innerHTML = 
+                `<div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="plant-icon">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1"><strong>Plant Type:</strong> ${result.plantType}</h5>
+                        <small class="text-secondary">Analysis Method: ${result.analysisMethod}</small>
+                    </div>
+                </div>`;
+            
+            // Disease Status with confidence indicators
+            let confidenceColor = getConfidenceColor(result.confidenceLevel);
+            let confidenceIcon = getConfidenceIcon(result.confidenceLevel);
+            
+            let diseaseHtml = `
+                <div class="confidence-meter">
+                    <div class="confidence-circle" style="background: ${confidenceColor};">
+                        ${result.confidence.toFixed(0)}%
+                    </div>
+                    <div>
+                        <h6 class="mb-1">
+                            ${result.isHealthy ? 
+                                '<i class="fas fa-check-circle text-success me-2"></i>Healthy Plant' : 
+                                '<i class="fas fa-exclamation-triangle text-warning me-2"></i>' + result.diseaseName}
+                        </h6>
+                        <p class="mb-0">
+                            <span style="color: ${confidenceColor};">${confidenceIcon} ${result.confidenceLevel} Confidence</span>
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            // Add uncertainty warning if needed
+            if (result.isUncertain) {
+                diseaseHtml += `
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Uncertain prediction - multiple possibilities detected
+                    </div>
+                `;
+            }
+            
+            document.getElementById('diseaseInfo').innerHTML = diseaseHtml;
+            
+            // Enhanced recommendations with warnings
+            let recommendationHtml = `
+                <div class="mt-4">
+                    <h6><i class="fas fa-lightbulb me-2"></i>Recommendations</h6>
+                    <p class="mb-3">${result.recommendation}</p>
+                </div>
+            `;
+            
+            if (result.warning && result.warning.trim() !== '') {
+                recommendationHtml += `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note:</strong> ${result.warning}
+                    </div>
+                `;
+            }
+            
+            // Show top predictions for transparency
+            if (result.topPredictions && result.topPredictions.length > 0) {
+                recommendationHtml += `
+                    <div class="prediction-bars">
+                        <h6><i class="fas fa-chart-bar me-2"></i>Top Predictions</h6>
+                `;
+                
+                for (let i = 0; i < Math.min(3, result.topPredictions.length); i++) {
+                    const pred = result.topPredictions[i];
+                    const barColor = i === 0 ? '#28a745' : '#6c757d';
+                    
+                    recommendationHtml += `
+                        <div class="prediction-item">
+                            <span>${i + 1}. ${pred.plantType} - ${pred.disease}</span>
+                            <div class="prediction-bar">
+                                <div class="prediction-fill" 
+                                     style="background-color: ${barColor}; width: ${pred.probability}%;"></div>
+                            </div>
+                            <span>${pred.probability.toFixed(1)}%</span>
+                        </div>
+                    `;
+                }
+                recommendationHtml += '</div>';
+            }
+            
+            document.getElementById('recommendations').innerHTML = recommendationHtml;
+            
+            // Show analysis result with animation
+            document.getElementById('analysisResult').style.display = 'block';
+        }
+
+        function getConfidenceColor(confidenceLevel) {
+            switch (confidenceLevel) {
+                case 'Very High': return '#28a745';
+                case 'High': return '#28a745';
+                case 'Medium': return '#ffc107';
+                case 'Low': return '#fd7e14';
+                case 'Very Low': return '#dc3545';
+                default: return '#6c757d';
+            }
+        }
+
+        function getConfidenceIcon(confidenceLevel) {
+            switch (confidenceLevel) {
+                case 'Very High': return '🟢';
+                case 'High': return '🟢';
+                case 'Medium': return '🟡';
+                case 'Low': return '🟠';
+                case 'Very Low': return '🔴';
+                default: return '⚪';
+            }
+        }
+
+        // Drag and drop functionality
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('plantImage');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                updateUploadArea(files[0]);
+            }
+        });
+
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                updateUploadArea(e.target.files[0]);
+            }
+        });
+
+        function updateUploadArea(file) {
+            const uploadText = uploadArea.querySelector('.upload-text');
+            uploadText.innerHTML = `<strong>Selected:</strong> ${file.name}`;
+        }
+
+        // Enhanced form submission with loading states
+        document.getElementById('diseaseAnalysisForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const imageFile = document.getElementById('plantImage').files[0];
+            
+            if (!imageFile) {
+                alert('Please select an image first.');
+                return;
+            }
+            
+            // Validate image size and type
+            if (imageFile.size > 10 * 1024 * 1024) { // 10MB limit
+                alert('Image file is too large. Please select an image smaller than 10MB.');
+                return;
+            }
+            
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/bmp'];
+            if (!allowedTypes.includes(imageFile.type)) {
+                alert('Please select a valid image file (JPEG, PNG, or BMP).');
+                return;
+            }
+            
+            formData.append('image', imageFile);
+            
+            // Show loading animation
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const analysisResult = document.getElementById('analysisResult');
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            
+            loadingSpinner.style.display = 'block';
+            analysisResult.style.display = 'none';
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Analyzing...';
+            
+            fetch('/api/plant-disease/analyze', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return response.text();
+            })
+            .then(text => {
+                console.log('Raw response:', text);
+                
+                try {
+                    const data = JSON.parse(text);
+                    console.log('Parsed data:', data);
+                    
+                    if (data.success === false) {
+                        throw new Error(data.error || 'Analysis failed');
+                    }
+                    
+                    displayAnalysisResult(data);
+                } catch (parseError) {
+                    console.error('JSON parse error:', parseError);
+                    throw new Error('Invalid response format');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                
+                // Show user-friendly error message
+                document.getElementById('analysisResult').innerHTML = `
+                    <div class="alert alert-danger">
+                        <h5><i class="fas fa-exclamation-triangle me-2"></i>Analysis Failed</h5>
+                        <p>Unable to analyze the image. This could be due to:</p>
+                        <ul class="mb-3">
+                            <li>Poor image quality or lighting</li>
+                            <li>Image doesn't contain a clear view of plant leaves</li>
+                            <li>Server connectivity issues</li>
+                        </ul>
+                        <p><strong>Suggestions:</strong></p>
+                        <ul class="mb-0">
+                            <li>Take a clear, well-lit photo of the affected plant area</li>
+                            <li>Ensure the leaf/disease is clearly visible</li>
+                            <li>Try again in a moment</li>
+                        </ul>
+                    </div>
+                `;
+                document.getElementById('analysisResult').style.display = 'block';
+            })
+            .finally(() => {
+                loadingSpinner.style.display = 'none';
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-microscope me-2"></i>Analyze Plant Health';
+            });
+        });
+
+        // Add smooth scrolling for better UX
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add intersection observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe all cards for animation
+        document.querySelectorAll('.modern-card, .ai-section').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(card);
+        });
+
+        // Auto-animate progress bars on page load
+        window.addEventListener('load', () => {
+            document.querySelectorAll('.progress-bar').forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 500);
+            });
+        });
+    </script>
+
     <!-- Bootstrap JS -->
-    <script src="/static/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

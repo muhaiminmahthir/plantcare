@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class DashboardController {
@@ -32,8 +33,10 @@ public class DashboardController {
     }
 
     @PostMapping("/schedule/{plantId}")
-    public String setWateringSchedule(@PathVariable Long plantId, @RequestParam("time") String time) {
+    public String setWateringSchedule(@PathVariable Long plantId, @RequestParam String time, RedirectAttributes redirectAttributes) {
+        System.out.println("Setting watering schedule for plant ID: " + plantId + " at " + time);  // Log data for debugging
         // Logic to set watering schedule
+        redirectAttributes.addFlashAttribute("message", "Watering schedule for plant " + plantId + " set to " + time);
         return "redirect:/dashboard";
     }
 

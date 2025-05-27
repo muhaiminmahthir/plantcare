@@ -15,43 +15,18 @@ public class Plant {
     private Integer moistureLevel;
 
     // Getters and setters
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id;}
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public String getName() {
-        return name;
-    }
+    public Integer getMoistureThreshold() { return moistureThreshold; }
+    public void setMoistureThreshold(Integer moistureThreshold) { this.moistureThreshold = moistureThreshold; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public Boolean getIsWateringEnabled() { return isWateringEnabled; }
+    public void setIsWateringEnabled(Boolean isWateringEnabled) { this.isWateringEnabled = isWateringEnabled; }
 
-    public Integer getMoistureThreshold() {
-        return moistureThreshold;
-    }
-
-    public void setMoistureThreshold(Integer moistureThreshold) {
-        this.moistureThreshold = moistureThreshold;
-    }
-
-    public Boolean getIsWateringEnabled() {
-        return isWateringEnabled;
-    }
-
-    public void setIsWateringEnabled(Boolean isWateringEnabled) {
-        this.isWateringEnabled = isWateringEnabled;
-    }
-
-    public Integer getMoistureLevel() {
-        return moistureLevel;
-    }
-
-    public void setMoistureLevel(Integer moistureLevel) {
-        this.moistureLevel = moistureLevel;
-    }
+    public Integer getMoistureLevel() { return moistureLevel; }
+    public void setMoistureLevel(Integer moistureLevel) { this.moistureLevel = moistureLevel; }
 }
