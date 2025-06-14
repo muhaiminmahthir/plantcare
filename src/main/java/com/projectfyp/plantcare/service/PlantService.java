@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Arrays;
 
 @Service
 public class PlantService {
@@ -16,24 +15,7 @@ public class PlantService {
     private PlantRepository plantRepository;
 
     public List<Plant> getAllPlants() {
-        // Returning mock data for testing purposes
-        Plant plant1 = new Plant();
-        plant1.setId(1L);
-        plant1.setName("Rose");
-        plant1.setMoistureLevel(60);
-        plant1.setMoistureThreshold(40);
-        plant1.setIsWateringEnabled(true);
-
-        Plant plant2 = new Plant();
-        plant2.setId(2L);
-        plant2.setName("Tulip");
-        plant2.setMoistureLevel(75);
-        plant2.setMoistureThreshold(50);
-        plant2.setIsWateringEnabled(false);
-
-        return Arrays.asList(plant1, plant2);  // Return a list of mock plants
-        
-        //return plantRepository.findAll(); commented for testing purposes
+        return plantRepository.findAll();
     }
 
     public Optional<Plant> getPlantById(Long id) {
@@ -44,17 +26,32 @@ public class PlantService {
         plantRepository.save(plant);
     }
 
-    public void triggerManualWatering(Long plantId) {
-        // Logic for triggering watering
-        // This is where you send a request to the ESP32 to trigger the watering
+    // Renamed from triggerManualWatering to acknowledge alert
+    public void acknowledgeAlert(Long plantId) {
         Plant plant = plantRepository.findById(plantId).orElseThrow();
-        plant.setMoistureLevel(100);  // Assume watering brings moisture level to 100%
-        plantRepository.save(plant);  // Save updated plant status after watering
+        // Just mark as acknowledged - no moisture level change
+        System.out.println("Alert acknowledged for plant: " + plant.getName());
+        // You could add a timestamp field here if needed
+        plantRepository.save(plant);
     }
 
     public void adjustMoistureThreshold(Long plantId, int newThreshold) {
         Plant plant = plantRepository.findById(plantId).orElseThrow();
         plant.setMoistureThreshold(newThreshold);
+        plantRepository.save(plant);
+    }
+
+    // Method for ESP32 integration
+    public void updateMoistureLevel(Long plantId, int moistureLevel) {
+        Plant plant = plantRepository.findById(plantId).orElseThrow();
+        plant.setMoistureLevel(moistureLevel);
+        plantRepository.save(plant);
+    }
+
+    // Toggle auto alerts (reusing the isWateringEnabled field)
+    public void toggleAutoAlerts(Long plantId, boolean enabled) {
+        Plant plant = plantRepository.findById(plantId).orElseThrow();
+        plant.setIsWateringEnabled(enabled); // Reuse this field for auto alerts
         plantRepository.save(plant);
     }
 }

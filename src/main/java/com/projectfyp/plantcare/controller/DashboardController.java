@@ -18,31 +18,54 @@ public class DashboardController {
     @GetMapping("/dashboard")
     public String showDashboard(Model model) {
         List<Plant> plants = plantService.getAllPlants();
+        
+        // Create sample plant if none exist
         if (plants == null || plants.isEmpty()) {
-            // Handle the case where no plants are available
+            Plant samplePlant = new Plant();
+            samplePlant.setName("Sample Plant");
+            samplePlant.setMoistureLevel(0);  // Will be updated by ESP32
+            samplePlant.setMoistureThreshold(30);
+            samplePlant.setIsWateringEnabled(true); // Auto alerts enabled
+            plantService.savePlant(samplePlant);
             
+            plants = plantService.getAllPlants();
         }
+        
         model.addAttribute("plants", plants);
         return "dashboard"; // Render the dashboard.html view
     }
 
-    @PostMapping("/water/{plantId}")
-    public String triggerManualWatering(@PathVariable Long plantId) {
-        plantService.triggerManualWatering(plantId);
-        return "redirect:/dashboard"; // Redirect to the dashboard page after watering
+    // Renamed from water to acknowledge alert
+    @PostMapping("/acknowledge/{plantId}")
+    public String acknowledgeAlert(@PathVariable Long plantId, RedirectAttributes redirectAttributes) {
+        plantService.acknowledgeAlert(plantId);
+        redirectAttributes.addFlashAttribute("message", "Alert acknowledged for plant " + plantId);
+        return "redirect:/dashboard";
     }
 
     @PostMapping("/schedule/{plantId}")
-    public String setWateringSchedule(@PathVariable Long plantId, @RequestParam String time, RedirectAttributes redirectAttributes) {
-        System.out.println("Setting watering schedule for plant ID: " + plantId + " at " + time);  // Log data for debugging
-        // Logic to set watering schedule
-        redirectAttributes.addFlashAttribute("message", "Watering schedule for plant " + plantId + " set to " + time);
+    public String setMonitoringSchedule(@PathVariable Long plantId, @RequestParam String time, RedirectAttributes redirectAttributes) {
+        System.out.println("Setting monitoring schedule for plant ID: " + plantId + " at " + time);
+        // Logic to set monitoring schedule (if needed)
+        redirectAttributes.addFlashAttribute("message", "Monitoring schedule for plant " + plantId + " set to " + time);
         return "redirect:/dashboard";
     }
 
     @PostMapping("/threshold/{plantId}")
     public String adjustMoistureThreshold(@PathVariable Long plantId, @RequestParam("threshold") int threshold) {
         plantService.adjustMoistureThreshold(plantId, threshold);
-        return "redirect:/dashboard"; // Redirect to the dashboard after adjusting threshold
+        return "redirect:/dashboard";
+    }
+
+    // New endpoint to toggle auto alerts
+    @PostMapping("/toggle-alerts/{plantId}")
+    public String toggleAutoAlerts(@PathVariable Long plantId, RedirectAttributes redirectAttributes) {
+        Plant plant = plantService.getPlantById(plantId).orElseThrow();
+        boolean newState = !plant.getIsWateringEnabled();
+        plantService.toggleAutoAlerts(plantId, newState);
+        
+        String status = newState ? "enabled" : "disabled";
+        redirectAttributes.addFlashAttribute("message", "Auto alerts " + status + " for " + plant.getName());
+        return "redirect:/dashboard";
     }
 }

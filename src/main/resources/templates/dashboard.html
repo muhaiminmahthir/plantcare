@@ -565,6 +565,37 @@
             border-left: 4px solid #3b82f6;
             color: #3b82f6;
         }
+        .alert-status {
+            padding: 0.75rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .alert-critical {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.2) 0%, rgba(255, 107, 107, 0.2) 100%);
+            border: 2px solid #dc3545;
+            color: #dc3545;
+            animation: pulse-alert 2s infinite;
+        }
+
+        .alert-warning {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.2) 0%, rgba(255, 235, 59, 0.2) 100%);
+            border: 2px solid #ffc107;
+            color: #ff8f00;
+        }
+
+        .alert-healthy {
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.2) 0%, rgba(76, 175, 80, 0.2) 100%);
+            border: 2px solid #28a745;
+            color: #28a745;
+        }
+
+        @keyframes pulse-alert {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.02); }
+        }
     </style>
 </head>
 <body>
@@ -623,41 +654,65 @@
                                 <span th:text="${plant.moistureLevel} + '%'"></span>
                             </div>
                             <div class="modern-progress">
-                                <div class="progress-bar" th:style="'width: ' + ${plant.moistureLevel} + '%;'"></div>
+                                <div class="progress-bar" th:style="'width: ' + ${plant.moistureLevel} + '%;'"></div> 
+                            </div>
+                        </div>
+
+                        <div class="alert-status" 
+                        th:classappend="${plant.isWateringEnabled && plant.moistureLevel < plant.moistureThreshold ? 'alert-critical' : 
+                        (plant.isWateringEnabled && plant.moistureLevel < plant.moistureThreshold + 10 ? 'alert-warning' : 'alert-healthy')}">
+                            <div th:if="${plant.isWateringEnabled && plant.moistureLevel < plant.moistureThreshold}">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>URGENT:</strong> Plant needs water immediately!
+                            </div>
+                            <div th:if="${plant.isWateringEnabled && plant.moistureLevel >= plant.moistureThreshold && plant.moistureLevel < plant.moistureThreshold + 10}">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                <strong>WARNING:</strong> Moisture getting low
+                            </div>
+                            <div th:if="${!plant.isWateringEnabled}">
+                                <i class="fas fa-bell-slash me-2"></i>
+                                <strong>MONITORING:</strong> Auto alerts disabled
+                            </div>
+                            <div th:if="${plant.isWateringEnabled && plant.moistureLevel >= plant.moistureThreshold + 10}">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <strong>HEALTHY:</strong> Plant is doing well
                             </div>
                         </div>
 
                         <div class="row g-2 mt-3">
                             <div class="col-12">
-                                <form th:action="@{/water/{id}(id=${plant.id})}" method="post">
+                                <form th:action="@{/acknowledge/{id}(id=${plant.id})}" method="post">
                                     <button type="submit" class="modern-btn w-100">
-                                        <i class="fas fa-tint me-2"></i>Water Plant
+                                        <i class="fas fa-check-circle me-2"></i>Acknowledge Alert
                                     </button>
                                 </form>
                             </div>
                         </div>
 
                         <div class="row g-2 mt-2">
-                            <div class="col-6">
-                                <form th:action="@{/schedule/{id}(id=${plant.id})}" method="post">
-                                    <div class="mb-2">
-                                        <label class="form-label">Schedule</label>
-                                        <input type="time" name="time" class="form-control modern-input">
-                                    </div>
-                                    <button type="submit" class="modern-btn btn-warning-modern w-100">
-                                        <i class="fas fa-clock me-1"></i>Set
-                                    </button>
-                                </form>
-                            </div>
-                            <div class="col-6">
+                            <div class="col-4">
                                 <form th:action="@{/threshold/{id}(id=${plant.id})}" method="post">
                                     <div class="mb-2">
                                         <label class="form-label">Threshold</label>
                                         <input type="number" name="threshold" class="form-control modern-input"
-                                               th:value="${plant.moistureThreshold}" min="0" max="100">
+                                            th:value="${plant.moistureThreshold}" min="0" max="100">
                                     </div>
                                     <button type="submit" class="modern-btn btn-info-modern w-100">
                                         <i class="fas fa-cog me-1"></i>Set
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="col-4">
+                                <form th:action="@{/toggle-alerts/{id}(id=${plant.id})}" method="post">
+                                    <div class="mb-2">
+                                        <label class="form-label">Auto Alerts</label>
+                                        <div class="form-control modern-input text-center" 
+                                            th:text="${plant.isWateringEnabled ? 'ON' : 'OFF'}"
+                                            th:style="${plant.isWateringEnabled ? 'color: #28a745' : 'color: #dc3545'}">
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="modern-btn btn-info-modern w-100">
+                                        <i class="fas fa-toggle-on me-1"></i>Toggle
                                     </button>
                                 </form>
                             </div>
@@ -1016,6 +1071,13 @@
                 }, 500);
             });
         });
+        // Auto-refresh page every 30 seconds to show live alerts
+        setInterval(() => {
+            // Only refresh if no forms are being filled
+            if (!document.querySelector('input:focus')) {
+                window.location.reload();
+            }
+        }, 30000);
     </script>
 
     <!-- Bootstrap JS -->
