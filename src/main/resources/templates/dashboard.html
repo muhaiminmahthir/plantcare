@@ -105,6 +105,108 @@
             z-index: 2;
         }
 
+        /* Refresh Status Indicator */
+        .refresh-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(26, 26, 46, 0.9);
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            padding: 0.5rem 1rem;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .refresh-status.paused {
+            border-color: var(--warning-gradient);
+            color: #ffc107;
+        }
+
+        .refresh-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #28a745;
+            animation: pulse-dot 2s infinite;
+        }
+
+        .refresh-indicator.paused {
+            background: #ffc107;
+            animation: none;
+        }
+
+        .refresh-status.analyzing {
+            border-color: #2196F3;
+            color: #2196F3;
+        }
+
+        .refresh-indicator.analyzing {
+            background: #2196F3;
+            animation: pulse-analyzing 1.5s infinite;
+        }
+
+        /* Presentation Mode Toggle */
+        .presentation-toggle {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            background: rgba(26, 26, 46, 0.9);
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            padding: 0.5rem 1rem;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .presentation-toggle:hover {
+            border-color: var(--accent-color);
+            background: rgba(26, 26, 46, 0.95);
+        }
+
+        .presentation-toggle.active {
+            border-color: #28a745;
+            color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .presentation-icon {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #dc3545;
+            transition: all 0.3s ease;
+        }
+
+        .presentation-icon.active {
+            background: #28a745;
+            animation: pulse-dot 2s infinite;
+        }
+
+        /* Hide refresh status in presentation mode */
+        .refresh-status.presentation-mode {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
         /* Modern Cards */
         .modern-card {
             background: var(--card-bg);
@@ -543,6 +645,12 @@
                 flex-direction: column;
                 gap: 1rem;
             }
+
+            .refresh-status {
+                position: static;
+                margin: 1rem;
+                justify-content: center;
+            }
         }
 
         /* Alert Styling */
@@ -565,6 +673,7 @@
             border-left: 4px solid #3b82f6;
             color: #3b82f6;
         }
+
         .alert-status {
             padding: 0.75rem;
             border-radius: 12px;
@@ -599,6 +708,18 @@
     </style>
 </head>
 <body>
+    <!-- Refresh Status Indicator -->
+    <div id="refreshStatus" class="refresh-status">
+        <div id="refreshIndicator" class="refresh-indicator"></div>
+        <span id="refreshText">🔄 Auto-refresh: Loading...</span>
+    </div>
+
+    <!-- Presentation Mode Toggle -->
+    <div id="presentationToggle" class="presentation-toggle" title="Toggle Presentation Mode (Stops Auto-Refresh)">
+        <div id="presentationIcon" class="presentation-icon"></div>
+        <span id="presentationText">Presentation Mode</span>
+    </div>
+
     <!-- Header Section -->
     <div class="header">
         <div class="container">
@@ -723,7 +844,7 @@
         </div>
 
         <!-- AI Disease Detection Section -->
-        <div class="ai-section">
+        <div class="ai-section" id="aiSection">
             <div class="ai-header">
                 <div class="ai-icon">
                     <i class="fas fa-brain"></i>
@@ -774,6 +895,206 @@
     </div>
 
     <script>
+        // ==========================================
+        // AUTO-REFRESH CONTROL VARIABLES
+        // ==========================================
+        let isAnalyzing = false;
+        let refreshInterval;
+        let isPresentationMode = false;
+        const REFRESH_RATE = 5000; // 5 seconds for more responsive updates
+        
+        // ==========================================
+        // PRESENTATION MODE FUNCTIONS
+        // ==========================================
+        function togglePresentationMode() {
+            isPresentationMode = !isPresentationMode;
+            const toggle = document.getElementById('presentationToggle');
+            const icon = document.getElementById('presentationIcon');
+            const text = document.getElementById('presentationText');
+            const refreshStatus = document.getElementById('refreshStatus');
+            
+            if (isPresentationMode) {
+                // Enable presentation mode
+                toggle.classList.add('active');
+                icon.classList.add('active');
+                text.textContent = 'Presentation: ON';
+                refreshStatus.classList.add('presentation-mode');
+                
+                // Stop auto-refresh
+                if (refreshInterval) {
+                    clearInterval(refreshInterval);
+                    refreshInterval = null;
+                }
+                
+                updateRefreshStatus('paused', '📺 Auto-Refresh: OFF (Presentation Mode)');
+                console.log('🎥 Presentation mode enabled - Auto-refresh stopped');
+                
+                // Show notification
+                showNotification('🎥 Presentation Mode ON - Auto-refresh disabled', 'success');
+            } else {
+                // Disable presentation mode
+                toggle.classList.remove('active');
+                icon.classList.remove('active');
+                text.textContent = 'Presentation Mode';
+                refreshStatus.classList.remove('presentation-mode');
+                
+                // Resume auto-refresh
+                startAutoRefresh();
+                console.log('🎥 Presentation mode disabled - Auto-refresh resumed');
+                
+                // Show notification
+                showNotification('🎥 Presentation Mode OFF - Auto-refresh enabled', 'info');
+            }
+        }
+        
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 120px;
+                right: 20px;
+                background: ${type === 'success' ? 'linear-gradient(135deg, #28a745, #20c997)' : 'linear-gradient(135deg, #667eea, #764ba2)'};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 12px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                z-index: 1001;
+                font-size: 0.9rem;
+                font-weight: 500;
+                max-width: 300px;
+                animation: slideInRight 0.3s ease;
+                backdrop-filter: blur(10px);
+            `;
+            notification.textContent = message;
+            
+            // Add CSS animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideInRight {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes slideOutRight {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            document.body.appendChild(notification);
+            
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => {
+                    notification.remove();
+                    style.remove();
+                }, 300);
+            }, 3000);
+        }
+        
+        // ==========================================
+        // AUTO-REFRESH FUNCTIONS
+        // ==========================================
+        function startAutoRefresh() {
+            // Don't start if in presentation mode
+            if (isPresentationMode) {
+                console.log('Auto-refresh blocked: Presentation mode active');
+                return;
+            }
+            
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+            
+            refreshInterval = setInterval(() => {
+                if (!isAnalyzing && !isPresentationMode && !isUserInteracting()) {
+                    // Full page refresh - keep your existing logic
+                    window.location.reload();
+                    updateRefreshStatus('auto-refresh', '🔄 Auto-Refresh: ON');
+                } else if (isPresentationMode) {
+                    updateRefreshStatus('paused', '📺 Auto-Refresh: OFF (Presentation Mode)');
+                } else {
+                    updateRefreshStatus('paused', '⏸️ Auto-Refresh: PAUSED');
+                }
+            }, REFRESH_RATE);
+        }
+        
+        function updateRefreshStatus(className, text) {
+            const statusElement = document.getElementById('refreshStatus');
+            const indicatorElement = document.getElementById('refreshIndicator');
+            const textElement = document.getElementById('refreshText');
+            
+            if (statusElement && indicatorElement && textElement) {
+                statusElement.className = `refresh-status ${className}`;
+                indicatorElement.className = `refresh-indicator ${className === 'paused' ? 'paused' : ''}`;
+                textElement.textContent = text;
+            }
+        }
+        
+        function isUserInteracting() {
+            // Check for various user interactions that should pause refresh
+            return document.querySelector('input:focus, textarea:focus, select:focus') !== null ||
+                   document.querySelector('#analysisResult[style*="block"]') !== null ||
+                   document.querySelector('#loadingSpinner[style*="block"]') !== null ||
+                   document.querySelector('.upload-area:hover') !== null ||
+                   document.querySelector('#aiSection:hover') !== null;
+        }
+        
+        // ==========================================
+        // DISEASE DETECTION FUNCTIONS
+        // ==========================================
+        function startDiseaseDetection() {
+            isAnalyzing = true;
+            updateRefreshStatus('analyzing', '🔬 Auto-Refresh: PAUSED (AI Analyzing...)');
+            console.log('Auto-refresh paused for AI analysis');
+        }
+        
+        function stopDiseaseDetection() {
+            isAnalyzing = false;
+            updateRefreshStatus('auto-refresh', '🔄 Auto-Refresh: RESUMED');
+            console.log('Auto-refresh resumed');
+        }
+        
+        // ==========================================
+        // INITIALIZE ON PAGE LOAD
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Dashboard initialized with smart refresh');
+            
+            // Start auto-refresh
+            startAutoRefresh();
+            
+            // Setup presentation mode toggle
+            const presentationToggle = document.getElementById('presentationToggle');
+            if (presentationToggle) {
+                presentationToggle.addEventListener('click', togglePresentationMode);
+            }
+            
+            // Keyboard shortcut for presentation mode (P key)
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'p' || e.key === 'P') {
+                    if (!e.ctrlKey && !e.altKey && !e.shiftKey) {
+                        // Only if not typing in an input field
+                        if (!document.querySelector('input:focus, textarea:focus, select:focus')) {
+                            e.preventDefault();
+                            togglePresentationMode();
+                        }
+                    }
+                }
+            });
+        });
+        
+        // ==========================================
+        // CLEANUP ON PAGE UNLOAD
+        // ==========================================
+        window.addEventListener('beforeunload', function() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        });
+
         // Enhanced JavaScript with all the functions from the previous version
         function displayAnalysisResult(result) {
             console.log('Displaying enhanced result:', result);
@@ -901,6 +1222,7 @@
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadArea.classList.add('dragover');
+            // Drag interaction detected, refresh will be paused
         });
 
         uploadArea.addEventListener('dragleave', () => {
@@ -924,6 +1246,7 @@
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
                 updateUploadArea(e.target.files[0]);
+                // File selected, refresh will be paused during analysis
             }
         });
 
@@ -958,11 +1281,12 @@
             
             formData.append('image', imageFile);
             
-            // Show loading animation
+            // Show loading animation and pause refresh
             const loadingSpinner = document.getElementById('loadingSpinner');
             const analysisResult = document.getElementById('analysisResult');
             const submitButton = e.target.querySelector('button[type="submit"]');
             
+            startDiseaseDetection(); // Use the simple function
             loadingSpinner.style.display = 'block';
             analysisResult.style.display = 'none';
             submitButton.disabled = true;
@@ -1022,6 +1346,7 @@
                 document.getElementById('analysisResult').style.display = 'block';
             })
             .finally(() => {
+                stopDiseaseDetection(); // Use the simple function
                 loadingSpinner.style.display = 'none';
                 submitButton.disabled = false;
                 submitButton.innerHTML = '<i class="fas fa-microscope me-2"></i>Analyze Plant Health';
@@ -1071,13 +1396,42 @@
                 }, 500);
             });
         });
-        // Auto-refresh page every 30 seconds to show live alerts
-        setInterval(() => {
-            // Only refresh if no forms are being filled
-            if (!document.querySelector('input:focus')) {
-                window.location.reload();
+
+        // Additional event listeners for better UX
+        document.addEventListener('focusin', (e) => {
+            if (e.target.matches('input, textarea, select')) {
+                updateRefreshStatus('paused', '⏸️ Auto-Refresh: PAUSED (Form Active)');
             }
-        }, 30000);
+        });
+        
+        document.addEventListener('focusout', (e) => {
+            if (e.target.matches('input, textarea, select')) {
+                setTimeout(() => {
+                    if (!document.querySelector('input:focus, textarea:focus, select:focus') && !isAnalyzing) {
+                        updateRefreshStatus('auto-refresh', '🔄 Auto-Refresh: ON');
+                    }
+                }, 500);
+            }
+        });
+
+        // Page visibility handling
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && refreshInterval) {
+                clearInterval(refreshInterval);
+                updateRefreshStatus('paused', '⏸️ Auto-Refresh: PAUSED (Tab Hidden)');
+            } else if (!document.hidden && !refreshInterval && !isPresentationMode) {
+                startAutoRefresh();
+            }
+        });
+
+        // Auto-detect screen sharing (experimental)
+        function detectScreenSharing() {
+            if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+                // Check if user grants screen share permission
+                // This is just a detection helper, not automatic
+                console.log('Screen sharing API available - Use Presentation Mode for best experience');
+            }
+        }
     </script>
 
     <!-- Bootstrap JS -->
